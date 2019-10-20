@@ -4,12 +4,16 @@
 USB usb;
 uint32_t usbEvents[200];
 uint32_t reqEvents[100];
+uint32_t midiEvents[100];
 uint8_t usbEventNo = 0;
 uint8_t reqEventNo = 0;
+uint8_t midiEventRead = 0;
+uint8_t midiEventWrite = 0;
 uint8_t eventOcc = 0;
 uint8_t mouseBuffer[4];
 bool usbReady = false;
 bool noteDown = false;
+
 extern "C" {
 #include "interrupts.h"
 }
@@ -18,6 +22,7 @@ extern "C" {
 extern uint32_t SystemCoreClock;
 int main(void)
 {
+
 	SystemInit();							// Activates floating point coprocessor and resets clock
 	SystemClock_Config();					// Configure the clock and PLL - NB Currently done in SystemInit but will need updating for production board
 	SystemCoreClockUpdate();				// Update SystemCoreClock (system clock frequency) derived from settings of oscillators, prescalers and PLL
@@ -44,7 +49,7 @@ int main(void)
 		uint8_t noteOn[4];
 		noteOn[0] = 0x08;
 		noteOn[1] = 0x90;		// 9 = note on 0 = channel
-		noteOn[2] = 60;			// note number 60 = C4
+		noteOn[2] = 60;			// note number 60 = C3
 		noteOn[3] = 100;		// Velocity 47
 
 		uint8_t noteOff[4];
@@ -63,7 +68,7 @@ int main(void)
 
 		}
 		else {
-			GPIOB->BSRR |= GPIO_BSRR_BR_7;
+ 			GPIOB->BSRR |= GPIO_BSRR_BR_7;
 			if (noteDown) {
 				usb.SendReport(noteOff, 4);
 				noteDown = false;

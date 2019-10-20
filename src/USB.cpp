@@ -130,9 +130,19 @@ void USB::USBInterruptHandler() {
 				epint = USBx_OUTEP(epnum)->DOEPINT & USBx_DEVICE->DOEPMSK;
 
 				if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC) {		// Transfer completed
+					if (usbEventNo > 14) {
+						int susp = 1;
+					}
+
 					USBx_OUTEP(epnum)->DOEPINT = USB_OTG_DOEPINT_XFRC;				// Clear interrupt
-			        ep0_state = USBD_EP0_IDLE;
-				    USBx_OUTEP(epnum)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;
+
+					if (epnum == 0) {
+						ep0_state = USBD_EP0_IDLE;
+						USBx_OUTEP(epnum)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;
+					} else {
+						midiEvents[midiEventNo++] = *xfer_buff;
+						USB_EP0StartXfer(DIR_OUT, epnum, 0);
+					}
 				}
 
 				if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP) {		// SETUP phase done
@@ -150,10 +160,6 @@ void USB::USBInterruptHandler() {
 					reqEventNo++;
 
 					ep0_state = USBD_EP0_SETUP;
-
-					if (usbEventNo > 135) {
-						int susp = 1;
-					}
 
 					switch (req.mRequest & 0x1F) {		// originally USBD_LL_SetupStage
 					case USB_REQ_RECIPIENT_DEVICE:

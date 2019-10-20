@@ -2,8 +2,8 @@
 
 #include "initialisation.h"
 
-extern uint32_t usbEvents[200], reqEvents[100];
-extern uint8_t usbEventNo, eventOcc, reqEventNo;
+extern uint32_t usbEvents[200], reqEvents[100], midiEvents[100];
+extern uint8_t usbEventNo, eventOcc, reqEventNo, midiEventNo;
 
 // USB Definitions
 #define USBx_PCGCCTL    *(__IO uint32_t *)(USB_OTG_FS_PERIPH_BASE + USB_OTG_PCGCCTL_BASE)
