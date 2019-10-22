@@ -140,7 +140,10 @@ void USB::USBInterruptHandler() {
 						ep0_state = USBD_EP0_IDLE;
 						USBx_OUTEP(epnum)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;
 					} else {
-						midiEvents[midiEventNo++] = *xfer_buff;
+						// Add buffer contents to midiArray
+						midiArray[midiEventWrite++].data = *xfer_buff;
+						if (midiEventWrite >= MIDIBUFFERSIZE)	midiEventWrite = 0;
+
 						USB_EP0StartXfer(DIR_OUT, epnum, 0);
 					}
 				}
@@ -154,10 +157,10 @@ void USB::USBInterruptHandler() {
 					req.Index        = SWAPBYTE      (pdata +  4);
 					req.Length       = SWAPBYTE      (pdata +  6);
 
-					reqEvents[reqEventNo++] = usbEventNo - 1;
+/*					reqEvents[reqEventNo++] = usbEventNo - 1;
 					reqEvents[reqEventNo++] = (uint32_t)(req.mRequest << 24) | (uint32_t)(req.Request << 16) | req.Value;
 					reqEvents[reqEventNo++] = (uint32_t)(req.Index << 16) | req.Length;
-					reqEventNo++;
+					reqEventNo++;*/
 
 					ep0_state = USBD_EP0_SETUP;
 

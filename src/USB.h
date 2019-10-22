@@ -2,8 +2,8 @@
 
 #include "initialisation.h"
 
-extern uint32_t usbEvents[200], reqEvents[100], midiEvents[100];
-extern uint8_t usbEventNo, eventOcc, reqEventNo, midiEventNo;
+extern uint32_t usbEvents[200], reqEvents[100];
+extern uint8_t usbEventNo, eventOcc, reqEventNo, midiEventNo, midiEventRead, midiEventWrite;
 
 // USB Definitions
 #define USBx_PCGCCTL    *(__IO uint32_t *)(USB_OTG_FS_PERIPH_BASE + USB_OTG_PCGCCTL_BASE)
@@ -121,6 +121,19 @@ struct usbRequest {
 	uint16_t Index;
 	uint16_t Length;
 };
+
+union MidiData {
+	uint32_t data;
+	struct {
+		uint8_t dummy;
+		uint8_t chn : 4;
+		uint8_t msg : 4;
+		uint8_t db1;
+		uint8_t db2;
+	};
+};
+extern MidiData midiArray[MIDIBUFFERSIZE];
+
 
 typedef enum {
 	CUSTOM_HID_IDLE = 0U,

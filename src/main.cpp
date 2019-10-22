@@ -1,34 +1,36 @@
 #include "initialisation.h"
 #include "USB.h"
 
+
 USB usb;
 uint32_t usbEvents[200];
 uint32_t reqEvents[100];
-uint32_t midiEvents[100];
 uint8_t usbEventNo = 0;
 uint8_t reqEventNo = 0;
 uint8_t midiEventRead = 0;
 uint8_t midiEventWrite = 0;
 uint8_t eventOcc = 0;
-uint8_t mouseBuffer[4];
-bool usbReady = false;
+uint16_t noteOn = 0;
+
 bool noteDown = false;
 
 extern "C" {
 #include "interrupts.h"
 }
 
+MidiData midiArray[MIDIBUFFERSIZE];
 
 extern uint32_t SystemCoreClock;
 int main(void)
 {
-
 	SystemInit();							// Activates floating point coprocessor and resets clock
 	SystemClock_Config();					// Configure the clock and PLL - NB Currently done in SystemInit but will need updating for production board
 	SystemCoreClockUpdate();				// Update SystemCoreClock (system clock frequency) derived from settings of oscillators, prescalers and PLL
-	InitBtnLED();							// PC13 blue button; PB7 is LD2 Blue; PB14 is LD3 Red
 	usb.InitUSB();
+	InitDAC();
+	InitBtnLED();							// PC13 blue button; PB7 is LD2 Blue; PB14 is LD3 Red
 
+	DAC->DHR12R1 = 2000;
 	while (1)
 	{
 
@@ -43,9 +45,30 @@ int main(void)
 		Ch. Pressure	0xD			Channel			1			Pressure			-none-
 		Pitch Bend		0xE			Channel			2			Bend LSB (7-bit)	Bend MSB (7-bits)
 		System			0xF			further spec	variable	variable			variable
-
 		*/
 
+		// Get next MIDI event
+		if (midiEventWrite != midiEventRead) {
+
+			// Count note on less note off events to establish whether to output gate
+			if (midiArray[midiEventRead].msg == 9) {
+				noteOn++;
+
+				// Output pitch to DAC Lowest note is C1 (36 or 0x24), highest is C7 (108 or 0x6C)
+				uint16_t dacOut = 4095 * (float)(std::min(std::max((int)midiArray[midiEventRead].db1, 36), 108) - 36) / 72;
+				DAC->DHR12R1 = dacOut;
+			}
+
+			if (midiArray[midiEventRead].msg == 8 && noteOn > 0) 	noteOn--;
+
+			if (noteOn > 0)		GPIOB->BSRR |= GPIO_BSRR_BS_14;
+			else				GPIOB->BSRR |= GPIO_BSRR_BR_14;
+
+			midiEventRead = midiEventRead == MIDIBUFFERSIZE ? 0 : midiEventRead + 1;
+		}
+
+
+		// Code to output midi note
 		uint8_t noteOn[4];
 		noteOn[0] = 0x08;
 		noteOn[1] = 0x90;		// 9 = note on 0 = channel
@@ -60,12 +83,10 @@ int main(void)
 
 		if (GPIOC->IDR & GPIO_IDR_IDR_13) {
 			GPIOB->BSRR |= GPIO_BSRR_BS_7;
-			usbReady = true;
 			if (!noteDown) {
 				noteDown = true;
 				usb.SendReport(noteOn, 4);
 			}
-
 		}
 		else {
  			GPIOB->BSRR |= GPIO_BSRR_BR_7;
