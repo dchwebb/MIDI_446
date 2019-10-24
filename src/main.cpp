@@ -61,8 +61,15 @@ int main(void)
 
 			if (midiArray[midiEventRead].msg == 8 && noteOn > 0) 	noteOn--;
 
-			if (noteOn > 0)		GPIOB->BSRR |= GPIO_BSRR_BS_14;
-			else				GPIOB->BSRR |= GPIO_BSRR_BR_14;
+			// light up LED (PB14) and transmit gate (PA3)
+			if (noteOn > 0) {
+				GPIOB->BSRR |= GPIO_BSRR_BS_14;
+				GPIOA->BSRR |= GPIO_BSRR_BS_3;
+			}
+			else {
+				GPIOB->BSRR |= GPIO_BSRR_BR_14;
+				GPIOA->BSRR |= GPIO_BSRR_BR_3;
+			}
 
 			midiEventRead = midiEventRead == MIDIBUFFERSIZE ? 0 : midiEventRead + 1;
 		}

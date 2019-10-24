@@ -56,6 +56,9 @@ void InitBtnLED()
 
 	// PB14 is LD3 Red
 	GPIOB->MODER |= GPIO_MODER_MODER14_0;			// Set to output
+
+	// PA3 for gate output
+	GPIOA->MODER |= GPIO_MODER_MODER3_0;			// Set to output
 }
 
 void InitSysTick()

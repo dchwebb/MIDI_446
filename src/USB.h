@@ -236,30 +236,30 @@ public:
 			0x00,							// bAlternateSetting
 			0x02,							// bNumEndpoints
 			USB_DEVICE_CLASS_AUDIO,			// bInterfaceClass
-			USB_DEVICE_SUBCLASS_MIDISTREAMING,	// bInterfaceSubClass : MIDIStreaming
-			0x00,							// InterfaceProtocol: NOT USED
-			0x00,							// iInterface : NOT USED
+			USB_DEVICE_SUBCLASS_MIDISTREAMING,	// bInterfaceSubClass: MIDIStreaming
+			0x00,							// InterfaceProtocol
+			0x00,							// iInterface: No String Descriptor
 
 			// B.4.2 Class-specific MS Interface Descriptor
 			0x07,							// length of descriptor in bytes
-			0x24,							// descriptor type
+			0x24,							// bDescriptorType: Class Specific Interface Descriptor
 			0x01,							// header functional descriptor
 			0x0, 0x01,						// bcdADC
-			CLASS_SPECIFIC_DESC_SIZE, 0,	// wTotalLength : Why 0x41 ?? XH : don't know...
+			CLASS_SPECIFIC_DESC_SIZE, 0,	// wTotalLength
 
 			// B.4.3 MIDI IN Jack Descriptor (Embedded)
 			0x06,							// bLength
 			0x24,							// descriptor type
-			0x02,							// MIDI_IN_JACK desc subtype
-			0x01,							// EMBEDDED bJackType
+			0x02,							// bDescriptorSubtype: MIDI_IN_JACK
+			0x01,							// bJackType: Embedded
 			0x01,							// bJackID
-			0x00,							// iJack
+			0x00,							// iJack: No String Descriptor
 
 			// Table B4.4 Midi Out Jack Descriptor (Embedded)
 			0x09,							// length of descriptor in bytes
 			0x24,							// descriptor type
 			0x03,							// MIDI_OUT_JACK descriptor
-			0x01,							// EMBEDDED bJackType
+			0x01,							// bJackType: Embedded
 			0x02,							// bJackID
 			0x01,							// No of input pins
 			0x01,							// ID of the Entity to which this Pin is connected.
